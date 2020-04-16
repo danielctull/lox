@@ -47,8 +47,21 @@ final class Scanner {
         case "+": addToken(.plus)
         case ";": addToken(.semicolon)
         case "*": addToken(.star)
+
+        case "!": addToken(match("=") ? .bangEqual : .bang)
+        case "=": addToken(match("=") ? .equalEqual : .equal)
+        case "<": addToken(match("=") ? .lessEqual : .less)
+        case ">": addToken(match("=") ? .greaterEqual : .greater)
+
         default: addError("Unexpected character: \(character)")
         }
+    }
+
+    private func match(_ expected: Character) -> Bool {
+        guard current < source.endIndex else { return false }
+        guard source[current] == expected else { return false }
+        current = source.index(after: current)
+        return true
     }
 
     private func addError(_ message: String) {
