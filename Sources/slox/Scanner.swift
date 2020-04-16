@@ -58,6 +58,10 @@ final class Scanner {
             guard match("/") else { addToken(.slash); return }
             while let next = peek(), next != "\n" { _ = advance() }
 
+        // Ignore whitespace
+        case " ", "\r", "\t": break
+        case "\n": line += 1
+
         default: addError("Unexpected character: \(character)")
         }
     }
