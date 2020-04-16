@@ -64,6 +64,8 @@ final class Scanner {
 
         case "\"": scanString()
 
+        case "0"..."9": scanNumber()
+
         default: addError("Unexpected character: \(character)")
         }
     }
@@ -72,7 +74,7 @@ final class Scanner {
 
         while let next = peek(), next != "\"" {
             if next == "\n" { line += 1 }
-            _ = advance()
+            advance()
         }
 
         guard current < source.endIndex else {
@@ -84,9 +86,38 @@ final class Scanner {
         let value = source[index..<current]
 
         // The closing ".
-        _ = advance()
+        advance()
 
         addToken(.string(String(value)))
+    }
+
+    private func scanNumber() {
+
+        while let now = peek(), isDigit(now) { advance() }
+
+        // Look for fractional part
+        if let now = peek(), now == ".", let next = peekNext(), isDigit(next) {
+
+            // Consume the "."
+            advance()
+
+            while let now = peek(), isDigit(now) { advance() }
+        }
+
+        let string = String(source[start..<current])
+        let double = Double(string)! // Pretty confident this will work!
+        addToken(.number(double))
+
+    }
+
+    private func isDigit(_ character: Character) -> Bool {
+        ("0"..."9").contains(character)
+    }
+
+    private func peekNext() -> Character? {
+        let index = source.index(after: current)
+        guard index < source.endIndex else { return nil }
+        return source[index]
     }
 
     private func peek() -> Character? {
@@ -106,6 +137,7 @@ final class Scanner {
         errors.append(error)
     }
 
+    @discardableResult
     private func advance() -> Character {
         defer { current = source.index(after: current) }
         return source[current]
