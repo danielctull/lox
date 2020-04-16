@@ -26,8 +26,8 @@ enum TokenType {
 
     // Literals
     case identifier
-    case string
-    case number
+    case string(String)
+    case number(Double)
 
     // Keywords
     case and
