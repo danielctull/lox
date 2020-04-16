@@ -62,8 +62,31 @@ final class Scanner {
         case " ", "\r", "\t": break
         case "\n": line += 1
 
+        case "\"": scanString()
+
         default: addError("Unexpected character: \(character)")
         }
+    }
+
+    private func scanString() {
+
+        while let next = peek(), next != "\"" {
+            if next == "\n" { line += 1 }
+            _ = advance()
+        }
+
+        guard current < source.endIndex else {
+            addError("Unterminated string.")
+            return
+        }
+
+        let index = source.index(after: start)
+        let value = source[index..<current]
+
+        // The closing ".
+        _ = advance()
+
+        addToken(.string(String(value)))
     }
 
     private func peek() -> Character? {
