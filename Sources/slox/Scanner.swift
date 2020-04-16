@@ -10,12 +10,13 @@ final class Scanner {
         current = start
     }
 
+    private var errors: [LoxError] = []
     private var tokens: [Token] = []
     private var start: String.Index
     private var current: String.Index
     private var line = 1
 
-    func scanTokens() -> [Token] {
+    func scanTokens() throws -> [Token] {
 
         tokens = []
         start = source.startIndex
@@ -23,14 +24,16 @@ final class Scanner {
 
         while current < source.endIndex {
             start = current
-            scanToken()
+            try scanToken()
         }
+
+        guard errors.isEmpty else { throw MultipleError(errors: errors) }
 
         tokens.append(Token(type: .eof, lexeme: "", line: line))
         return tokens
     }
 
-    private func scanToken() {
+    private func scanToken() throws {
 
         let character = advance()
         switch (character) {
@@ -44,8 +47,13 @@ final class Scanner {
         case "+": addToken(.plus)
         case ";": addToken(.semicolon)
         case "*": addToken(.star)
-        default: break
+        default: addError("Unexpected character: \(character)")
         }
+    }
+
+    private func addError(_ message: String) {
+        let error = LoxError(line: line, message: message)
+        errors.append(error)
     }
 
     private func advance() -> Character {
