@@ -18,6 +18,7 @@ final class Scanner {
 
     func scanTokens() throws -> [Token] {
 
+        errors = []
         tokens = []
         start = source.startIndex
         current = start
