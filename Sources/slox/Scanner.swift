@@ -53,8 +53,18 @@ final class Scanner {
         case "<": addToken(match("=") ? .lessEqual : .less)
         case ">": addToken(match("=") ? .greaterEqual : .greater)
 
+        case "/":
+            // Handle commented code and ignore it all
+            guard match("/") else { addToken(.slash); return }
+            while let next = peek(), next != "\n" { _ = advance() }
+
         default: addError("Unexpected character: \(character)")
         }
+    }
+
+    private func peek() -> Character? {
+        guard current < source.endIndex else { return nil }
+        return source[current]
     }
 
     private func match(_ expected: Character) -> Bool {
