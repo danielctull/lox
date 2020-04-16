@@ -3,6 +3,25 @@ import Foundation
 
 final class Scanner {
 
+    private let keywords: [String: TokenType] = [
+        "and": .and,
+        "class": .class,
+        "else": .else,
+        "false": .false,
+        "fun": .fun,
+        "for": .for,
+        "if": .if,
+        "nil": .nil,
+        "or": .or,
+        "print": .print,
+        "return": .return,
+        "super": .super,
+        "this": .this,
+        "true": .true,
+        "var": .var,
+        "while": .while
+    ]
+
     private let source: String
     init(source: String) {
         self.source = source
@@ -67,6 +86,8 @@ final class Scanner {
 
         case "0"..."9": scanNumber()
 
+        case "a"..."z", "A"..."Z", "_": scanIdentifier()
+
         default: addError("Unexpected character: \(character)")
         }
     }
@@ -111,8 +132,30 @@ final class Scanner {
 
     }
 
+    private func scanIdentifier() {
+
+        while let now = peek(), isAlphaNumeric(now) { advance() }
+
+        let text = String(source[start..<current])
+        if let keywordType = keywords[text] {
+            addToken(keywordType)
+        } else {
+            addToken(.identifier)
+        }
+    }
+
     private func isDigit(_ character: Character) -> Bool {
         ("0"..."9").contains(character)
+    }
+
+    private func isAlpha(_ character: Character) -> Bool {
+        character == "_"
+            || ("a"..."z").contains(character)
+            || ("A"..."Z").contains(character)
+    }
+
+    private func isAlphaNumeric(_ character: Character) -> Bool {
+        isAlpha(character) || isDigit(character)
     }
 
     private func peekNext() -> Character? {
