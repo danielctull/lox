@@ -32,7 +32,7 @@ struct Lox: ParsableCommand {
 
     func runPrompt() {
 
-        print("> ")
+        print("> ", terminator: "")
 
         while let line = readLine() {
 
@@ -42,7 +42,7 @@ struct Lox: ParsableCommand {
                 print(error)
             }
 
-            print("> ")
+            print("> ", terminator: "")
         }
     }
 
