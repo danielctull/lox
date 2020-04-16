@@ -14,7 +14,7 @@ struct Lox: ParsableCommand {
         if let file = file {
             try runFile(file)
         } else {
-            try runPrompt()
+            runPrompt()
         }
     }
 
@@ -30,12 +30,18 @@ struct Lox: ParsableCommand {
         try runCode(code)
     }
 
-    func runPrompt() throws {
+    func runPrompt() {
 
         print("> ")
 
         while let line = readLine() {
-            try runCode(line)
+
+            do {
+                try runCode(line)
+            } catch {
+                print(error)
+            }
+
             print("> ")
         }
     }
