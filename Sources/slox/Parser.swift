@@ -144,6 +144,33 @@ final class Parser {
         }
     }
 
+    private func synchronize() {
+
+        advance()
+
+        // Discard tokens until we're at a statement boundary, which is after
+        // a semi-colon or just before class, fun, var, for, if, while, print or
+        // return statements.
+        while !isAtEnd {
+
+            guard previous.type != .semicolon else { return }
+
+            switch peek.type {
+
+            case .class,
+                 .fun,
+                 .var,
+                 .for,
+                 .if,
+                 .while,
+                 .print,
+                 .return: return
+
+            default: advance()
+            }
+        }
+    }
+
     // Consuming
     private func match(_ types: TokenType...) -> Bool {
 
