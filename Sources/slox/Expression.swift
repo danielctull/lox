@@ -49,3 +49,24 @@ indirect enum Expression {
         let expression: Expression
     }
 }
+
+// Conveniences for making expressions
+
+extension Expression {
+
+    static func binary(lhs: Expression,
+                       `operator`: Binary.Operator,
+                       rhs: Expression) -> Expression {
+
+        .binary(Binary(lhs: lhs, operator: `operator`, rhs: rhs))
+    }
+
+    static func unary(`operator`: Unary.Operator,
+                      expression: Expression) -> Expression {
+        .unary(Unary(operator: `operator`, expression: expression))
+    }
+
+    static func grouping(expression: Expression) -> Expression {
+        .grouping(Grouping(expression: expression))
+    }
+}

@@ -48,8 +48,9 @@ struct Lox: ParsableCommand {
 
     func runCode(_ code: String) throws {
         let scanner = Scanner(source: code)
-        for token in try scanner.scanTokens() {
-            print(token)
-        }
+        let tokens = try scanner.scanTokens()
+        let parser = Parser(tokens: tokens)
+        let expression = try parser.parse()
+        print(expression)
     }
 }

@@ -26,7 +26,7 @@ extension Expression.Literal: CustomStringConvertible {
 
 extension Expression.Unary: CustomStringConvertible {
 
-    var description: String { "(\(`operator`) \(expression)" }
+    var description: String { "(\(`operator`) \(expression))" }
 }
 
 extension Expression.Unary.Operator: CustomStringConvertible {

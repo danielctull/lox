@@ -1,5 +1,5 @@
 
-enum TokenType {
+enum TokenType: Equatable {
 
     // Single-character tokens
     case leftParenthesis
