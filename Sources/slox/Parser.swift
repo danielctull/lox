@@ -3,11 +3,11 @@ import Foundation
 
 final class Parser {
 
-    private let tokens: [Token]
+    private let scanner: ItemScanner<[Token]>
     private var current = 0
 
     init(tokens: [Token]) {
-        self.tokens = tokens
+        self.scanner = ItemScanner(tokens, isEnd: { $0.type == .eof })
     }
 
     func parse() throws -> Expression {
@@ -22,13 +22,13 @@ final class Parser {
 
         var expression = try comparison()
 
-        while match(.bangEqual, .equalEqual) {
+        while scanner.match(\.type, .bangEqual, .equalEqual) {
 
             let `operator`: Expression.Binary.Operator = try {
-                switch previous.type {
+                switch scanner.previous?.type {
                 case .bangEqual: return .notEqual
                 case .equalEqual: return .equalEqual
-                default: throw UnexpectedToken(token: previous, expected: .bangEqual, .equalEqual)
+                default: throw UnexpectedToken(token: scanner.previous!, expected: .bangEqual, .equalEqual)
                 }
             }()
 
@@ -44,15 +44,15 @@ final class Parser {
 
         var expression = try addition()
 
-        while match(.greater, .greaterEqual, .less, .lessEqual) {
+        while scanner.match(\.type, .greater, .greaterEqual, .less, .lessEqual) {
 
             let `operator`: Expression.Binary.Operator = try {
-                switch previous.type {
+                switch scanner.previous?.type {
                 case .greater: return .greater
                 case .greaterEqual: return .greaterEqual
                 case .less: return .less
                 case .lessEqual: return .lessEqual
-                default: throw UnexpectedToken(token: previous, expected: .greater, .greaterEqual, .less, .lessEqual)
+                default: throw UnexpectedToken(token: scanner.previous!, expected: .greater, .greaterEqual, .less, .lessEqual)
                 }
             }()
 
@@ -68,13 +68,13 @@ final class Parser {
 
         var expression = try multiplication()
 
-        while match(.minus, .plus) {
+        while scanner.match(\.type, .minus, .plus) {
 
             let `operator`: Expression.Binary.Operator = try {
-                switch previous.type {
+                switch scanner.previous?.type {
                 case .minus: return .minus
                 case .plus: return .plus
-                default: throw UnexpectedToken(token: previous, expected: .minus, .plus)
+                default: throw UnexpectedToken(token: scanner.previous!, expected: .minus, .plus)
                 }
             }()
 
@@ -90,13 +90,13 @@ final class Parser {
 
         var expression = try unary()
 
-        while match(.slash, .star) {
+        while scanner.match(\.type, .slash, .star) {
 
             let `operator`: Expression.Binary.Operator = try {
-                switch previous.type {
+                switch scanner.previous?.type {
                 case .slash: return .divide
                 case .star: return .multiply
-                default: throw UnexpectedToken(token: previous, expected: .slash, .star)
+                default: throw UnexpectedToken(token: scanner.previous!, expected: .slash, .star)
                 }
             }()
 
@@ -110,13 +110,13 @@ final class Parser {
 
     private func unary() throws -> Expression {
 
-        guard match(.bang, .minus) else { return try primary() }
+        guard scanner.match(\.type, .bang, .minus) else { return try primary() }
 
         let `operator`: Expression.Unary.Operator = try {
-            switch previous.type {
+            switch scanner.previous?.type {
             case .bang: return .not
             case .minus: return .negative
-            default: throw UnexpectedToken(token: previous, expected: .bang, .minus)
+            default: throw UnexpectedToken(token: scanner.previous!, expected: .bang, .minus)
             }
         }()
 
@@ -126,7 +126,7 @@ final class Parser {
 
     private func primary() throws -> Expression {
 
-        let current = advance()
+        let current = scanner.advance()
         switch current.type {
         case .false: return .literal(.false)
         case .true: return .literal(.true)
@@ -146,16 +146,16 @@ final class Parser {
 
     private func synchronize() {
 
-        advance()
+        scanner.advance()
 
         // Discard tokens until we're at a statement boundary, which is after
         // a semi-colon or just before class, fun, var, for, if, while, print or
         // return statements.
-        while !isAtEnd {
+        while !scanner.isAtEnd {
 
-            guard previous.type != .semicolon else { return }
+            guard scanner.previous?.type != .semicolon else { return }
 
-            switch peek.type {
+            switch scanner.current?.type {
 
             case .class,
                  .fun,
@@ -166,46 +166,18 @@ final class Parser {
                  .print,
                  .return: return
 
-            default: advance()
+            default: scanner.advance()
             }
         }
-    }
-
-    // Consuming
-    private func match(_ types: TokenType...) -> Bool {
-
-        for type in types {
-            if check(type) {
-                advance()
-                return true
-            }
-        }
-
-        return false
-    }
-
-    private func check(_ type: TokenType) -> Bool {
-        guard !isAtEnd else { return false }
-        return peek.type == type
-    }
-
-    @discardableResult
-    private func advance() -> Token {
-        defer { current += 1 }
-        return tokens[current]
     }
 
     @discardableResult
     private func consume(type: TokenType) throws -> Token {
-        guard check(type) else { throw UnexpectedToken(token: peek, expected: type) }
-        return advance()
+        guard scanner.check(\.type, type) else {
+            throw UnexpectedToken(token: scanner.current!, expected: type)
+        }
+        return scanner.advance()
     }
-
-    private var isAtEnd: Bool { peek.type == .eof }
-
-    private var peek: Token { tokens[current] }
-
-    private var previous: Token { tokens[current - 1] }
 }
 
 struct UnexpectedToken: LocalizedError {
@@ -223,5 +195,94 @@ struct UnexpectedToken: LocalizedError {
     var description: String {
         let expectations = expected.map(String.init(describing:)).joined(separator: ", ")
         return "[line: \(token.line)] Expected \(expectations) but found \(token.type)"
+    }
+}
+
+
+
+final class ItemScanner<C> where C: BidirectionalCollection {
+
+    typealias Element = C.Element
+    typealias Index = C.Index
+
+    var index: Index
+    let elements: C
+    private let isEnd: (Element) -> Bool
+
+    init(_ elements: C,
+         isEnd: @escaping (Element) -> Bool = { _ in false }) {
+        self.elements = elements
+        self.isEnd = isEnd
+        self.index = elements.startIndex
+    }
+
+    var isAtEnd: Bool {
+        guard let element = current else { return true }
+        return isEnd(element)
+    }
+
+    var previous: Element? {
+        let previous = elements.index(before: index)
+        guard previous >= elements.startIndex else { return nil }
+        return elements[previous]
+    }
+
+    var current: Element? {
+        guard index < elements.endIndex else { return nil }
+        return elements[index]
+    }
+
+    var next: Element? {
+        let next = elements.index(after: index)
+        guard next < elements.endIndex else { return nil }
+        return elements[next]
+    }
+
+    @discardableResult
+    func advance() -> Element {
+        defer { index = elements.index(after: index) }
+        return elements[index]
+    }
+
+    func check<Property: Equatable>(
+        _ keyPath: KeyPath<Element, Property>,
+        _ property: Property
+    ) -> Bool {
+        guard let element = current else { return false }
+        guard !isEnd(element) else { return false }
+        return element[keyPath: keyPath] == property
+    }
+
+    func match<Property: Equatable>(
+        _ keyPath: KeyPath<Element, Property>,
+        _ expected: Property...
+    ) -> Bool {
+        match(keyPath, expected)
+    }
+
+    func match<Property: Equatable>(
+        _ keyPath: KeyPath<Element, Property>,
+        _ expected: [Property]
+    ) -> Bool {
+
+        for property in expected {
+            if check(keyPath, property) {
+                index = elements.index(after: index)
+                return true
+            }
+        }
+
+        return false
+    }
+}
+
+extension ItemScanner where C.Element: Equatable {
+
+    func check(_ element: Element) -> Bool {
+        check(\.self, element)
+    }
+
+    func match(_ expected: Element...) -> Bool {
+        match(\.self, expected)
     }
 }
