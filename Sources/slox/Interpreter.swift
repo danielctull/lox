@@ -3,8 +3,10 @@ import Foundation
 
 struct Interpreter {
 
-    func interpret(_ expression: Expression) throws -> Value {
-        try expression.evaluate()
+    func interpret(_ statements: [Statement]) throws {
+        for statement in statements {
+            try statement.execute()
+        }
     }
 }
 
@@ -13,6 +15,16 @@ enum Value {
     case number(Double)
     case boolean(Bool)
     case `nil`
+}
+
+extension Statement {
+
+    fileprivate func execute() throws {
+        switch self {
+        case let .print(expression): Swift.print(try expression.evaluate())
+        case let .expression(expression): _ = try expression.evaluate()
+        }
+    }
 }
 
 extension Expression {

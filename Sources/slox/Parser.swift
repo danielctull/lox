@@ -10,8 +10,30 @@ final class Parser {
         self.tokens = tokens
     }
 
-    func parse() throws -> Expression {
-        try expression()
+    func parse() throws -> [Statement] {
+        var statements: [Statement] = []
+        while !isAtEnd {
+            statements.append(try statement())
+        }
+        return statements
+    }
+
+    private func statement() throws -> Statement {
+        if match(.print) { return try printStatement() }
+
+        return try expressionStatement()
+    }
+
+    private func printStatement() throws -> Statement {
+        let expression = try self.expression()
+        try consume(type: .semicolon)
+        return .print(expression)
+    }
+
+    private func expressionStatement() throws -> Statement {
+        let expression = try self.expression()
+        try consume(type: .semicolon)
+        return .expression(expression)
     }
 
     private func expression() throws -> Expression {

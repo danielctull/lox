@@ -5,6 +5,7 @@ import Foundation
 struct Lox: ParsableCommand {
 
     static let configuration = CommandConfiguration(commandName: "slox")
+    static let interpreter = Interpreter()
 
     @Argument(help: "The lox file to read in.")
     var file: String?
@@ -50,8 +51,7 @@ struct Lox: ParsableCommand {
         let scanner = Scanner(source: code)
         let tokens = try scanner.scanTokens()
         let parser = Parser(tokens: tokens)
-        let expression = try parser.parse()
-        let interpreter = Interpreter()
-        print(try interpreter.interpret(expression))
+        let statements = try parser.parse()
+        try Lox.interpreter.interpret(statements)
     }
 }
