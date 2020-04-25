@@ -39,7 +39,7 @@ struct Lox: ParsableCommand {
             do {
                 try runCode(line)
             } catch {
-                print(error)
+                print(error.localizedDescription)
             }
 
             print("> ", terminator: "")
@@ -51,6 +51,7 @@ struct Lox: ParsableCommand {
         let tokens = try scanner.scanTokens()
         let parser = Parser(tokens: tokens)
         let expression = try parser.parse()
-        print(expression)
+        let interpreter = Interpreter()
+        print(try interpreter.interpret(expression))
     }
 }
