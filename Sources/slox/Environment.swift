@@ -5,7 +5,7 @@ struct Environment {
 
     private var expressions: [Expression.Variable: Expression?] = [:]
 
-    mutating func set(_ expression: Expression?, for variable: Expression.Variable) {
+    mutating func define(_ expression: Expression?, for variable: Expression.Variable) {
         expressions[variable] = expression
     }
 
@@ -16,6 +16,15 @@ struct Environment {
         }
 
         return expression
+    }
+
+    mutating func assign(_ expression: Expression, for variable: Expression.Variable) throws {
+
+        guard expressions.keys.contains(variable) else {
+            throw UndefinedVariable(variable: variable)
+        }
+
+        expressions[variable] = expression
     }
 }
 

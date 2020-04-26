@@ -64,7 +64,28 @@ final class Parser {
     }
 
     private func expression() throws -> Expression {
-        try equality()
+        try assignment()
+    }
+
+    private func assignment() throws -> Expression {
+
+        let expression = try equality()
+
+        if match(.equal) {
+            let value = try assignment()
+
+            if case let .variable(variable) = expression {
+                return .assignment(variable: variable, expression: value)
+            }
+
+            // We report an error if the left-hand side isn’t a valid assignment
+            // target, but we don’t throw it because the parser isn’t in a
+            // confused state where we need to go into panic mode and
+            // synchronize.
+            errors.append(InvalidAssignmentTarget(lhs: expression, rhs: value))
+        }
+
+        return expression
     }
 
     private func equality() throws -> Expression {
@@ -256,6 +277,12 @@ final class Parser {
     private var peek: Token { tokens[current] }
 
     private var previous: Token { tokens[current - 1] }
+}
+
+struct InvalidAssignmentTarget: LocalizedError {
+    let lhs: Expression
+    let rhs: Expression
+    var errorDescription: String? { "Invalid Assignment Target: \(lhs)" }
 }
 
 struct UnexpectedToken: LocalizedError {

@@ -29,7 +29,7 @@ extension Interpreter {
         switch statement {
         case let .print(expression): Swift.print(try evaluateExpression(expression))
         case let .expression(expression): _ = try evaluateExpression(expression)
-        case let .var(variable, expression): environment.set(expression, for: variable)
+        case let .var(variable, expression): environment.define(expression, for: variable)
         }
     }
 }
@@ -40,12 +40,19 @@ extension Interpreter {
 
     fileprivate func evaluateExpression(_ expression: Expression) throws -> Value {
         switch expression {
+        case let .assignment(assignment): return try evaluateAssignment(assignment)
         case let .literal(literal): return evaluateLiteral(literal)
         case let .unary(unary): return try evaluateUnary(unary)
         case let .binary(binary): return try evaluateBinary(binary)
         case let .grouping(grouping): return try evaluateGrouping(grouping)
         case let .variable(variable): return try evaluateVariable(variable)
         }
+    }
+
+    fileprivate func evaluateAssignment(_ assignment: Expression.Assignment) throws -> Value {
+        let value = try evaluateExpression(assignment.expression)
+        try environment.assign(assignment.expression, for: assignment.variable)
+        return value
     }
 
     fileprivate func evaluateLiteral(_ literal: Expression.Literal) -> Value {

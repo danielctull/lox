@@ -3,6 +3,7 @@ extension Expression: CustomStringConvertible {
 
     var description: String {
         switch self {
+        case .assignment(let assignment): return assignment.description
         case .literal(let literal): return literal.description
         case .unary(let unary): return unary.description
         case .binary(let binary): return binary.description
@@ -10,6 +11,10 @@ extension Expression: CustomStringConvertible {
         case .variable(let variable): return variable.description
         }
     }
+}
+
+extension Expression.Assignment: CustomStringConvertible {
+    var description: String { "(= \(variable.name) \(expression))" }
 }
 
 extension Expression.Literal: CustomStringConvertible {

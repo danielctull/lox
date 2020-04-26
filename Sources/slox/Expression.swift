@@ -1,11 +1,17 @@
 
 indirect enum Expression {
 
+    case assignment(Assignment)
     case literal(Literal)
     case unary(Unary)
     case binary(Binary)
     case grouping(Grouping)
     case variable(Variable)
+
+    struct Assignment {
+        let variable: Variable
+        let expression: Expression
+    }
 
     enum Literal {
         case number(Double)
@@ -58,6 +64,10 @@ indirect enum Expression {
 // Conveniences for making expressions
 
 extension Expression {
+
+    static func assignment(variable: Variable, expression: Expression) -> Expression {
+        .assignment(Assignment(variable: variable, expression: expression))
+    }
 
     static func binary(lhs: Expression,
                        `operator`: Binary.Operator,
