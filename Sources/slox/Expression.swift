@@ -5,6 +5,7 @@ indirect enum Expression {
     case unary(Unary)
     case binary(Binary)
     case grouping(Grouping)
+    case variable(Variable)
 
     enum Literal {
         case number(Double)
@@ -48,6 +49,10 @@ indirect enum Expression {
     struct Grouping {
         let expression: Expression
     }
+
+    struct Variable: Hashable {
+        let name: String
+    }
 }
 
 // Conveniences for making expressions
@@ -68,5 +73,9 @@ extension Expression {
 
     static func grouping(expression: Expression) -> Expression {
         .grouping(Grouping(expression: expression))
+    }
+
+    static func variable(name: String) -> Expression {
+        .variable(Variable(name: name))
     }
 }

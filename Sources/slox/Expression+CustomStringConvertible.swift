@@ -7,6 +7,7 @@ extension Expression: CustomStringConvertible {
         case .unary(let unary): return unary.description
         case .binary(let binary): return binary.description
         case .grouping(let grouping): return grouping.description
+        case .variable(let variable): return variable.description
         }
     }
 }
@@ -25,7 +26,6 @@ extension Expression.Literal: CustomStringConvertible {
 }
 
 extension Expression.Unary: CustomStringConvertible {
-
     var description: String { "(\(`operator`) \(expression))" }
 }
 
@@ -63,6 +63,10 @@ extension Expression.Binary.Operator: CustomStringConvertible {
 }
 
 extension Expression.Grouping: CustomStringConvertible {
-
     var description: String { "(group \(expression))" }
+}
+
+
+extension Expression.Variable: CustomStringConvertible {
+    var description: String { "(var \(name))" }
 }

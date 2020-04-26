@@ -4,6 +4,7 @@ import Foundation
 final class Parser {
 
     private let tokens: [Token]
+    private var errors: [Error] = []
     private var current = 0
 
     init(tokens: [Token]) {
@@ -13,9 +14,27 @@ final class Parser {
     func parse() throws -> [Statement] {
         var statements: [Statement] = []
         while !isAtEnd {
-            statements.append(try statement())
+
+            do {
+                statements.append(try declaration())
+            } catch {
+                errors.append(error)
+                synchronize()
+            }
         }
+
+        guard errors.count == 0 else {
+            throw MultipleError(errors: errors)
+        }
+
         return statements
+    }
+
+    private func declaration() throws -> Statement {
+
+        if match(.var) { return try varStatement() }
+
+        return try statement()
     }
 
     private func statement() throws -> Statement {
@@ -28,6 +47,14 @@ final class Parser {
         let expression = try self.expression()
         try consume(type: .semicolon)
         return .print(expression)
+    }
+
+    private func varStatement() throws -> Statement {
+        let token = try consume(type: .identifier)
+        let variable = Expression.Variable(name: token.lexeme)
+        let initializer = match(.equal) ? try expression() : nil
+        try consume(type: .semicolon)
+        return .var(variable, initializer)
     }
 
     private func expressionStatement() throws -> Statement {
@@ -155,6 +182,7 @@ final class Parser {
         case .nil: return .literal(.nil)
         case .number(let number): return .literal(.number(number))
         case .string(let string): return .literal(.string(string))
+        case .identifier: return .variable(name: previous.lexeme)
 
         case .leftParenthesis:
             let output = Expression.grouping(expression: try expression())
@@ -244,6 +272,6 @@ struct UnexpectedToken: LocalizedError {
 
     var description: String {
         let expectations = expected.map(String.init(describing:)).joined(separator: ", ")
-        return "[line: \(token.line)] Expected \(expectations) but found \(token.type)"
+        return "[line: \(token.line)] Expected \(expectations) but found \(token.type) \(token.lexeme)"
     }
 }

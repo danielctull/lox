@@ -1,11 +1,15 @@
 
 import Foundation
 
-struct Interpreter {
+class Interpreter {
+
+    init() {}
+
+    var environment = Environment()
 
     func interpret(_ statements: [Statement]) throws {
         for statement in statements {
-            try statement.execute()
+            try evaluate(statement)
         }
     }
 }
@@ -17,32 +21,35 @@ enum Value {
     case `nil`
 }
 
-extension Statement {
+// MARK: - Statements
 
-    fileprivate func execute() throws {
-        switch self {
-        case let .print(expression): Swift.print(try expression.evaluate())
-        case let .expression(expression): _ = try expression.evaluate()
+extension Interpreter {
+
+    fileprivate func evaluate(_ statement: Statement) throws {
+        switch statement {
+        case let .print(expression): Swift.print(try evaluateExpression(expression))
+        case let .expression(expression): _ = try evaluateExpression(expression)
+        case let .var(variable, expression): environment.set(expression, for: variable)
         }
     }
 }
 
-extension Expression {
+// MARK: - Expressions
 
-    fileprivate func evaluate() throws -> Value {
-        switch self {
-        case let .literal(literal): return literal.value
-        case let .unary(unary): return try unary.evaluate()
-        case let .binary(binary): return try binary.evaluate()
-        case let .grouping(grouping): return try grouping.evaluate()
+extension Interpreter {
+
+    fileprivate func evaluateExpression(_ expression: Expression) throws -> Value {
+        switch expression {
+        case let .literal(literal): return evaluateLiteral(literal)
+        case let .unary(unary): return try evaluateUnary(unary)
+        case let .binary(binary): return try evaluateBinary(binary)
+        case let .grouping(grouping): return try evaluateGrouping(grouping)
+        case let .variable(variable): return try evaluateVariable(variable)
         }
     }
-}
 
-extension Expression.Literal {
-
-    fileprivate var value: Value {
-        switch self {
+    fileprivate func evaluateLiteral(_ literal: Expression.Literal) -> Value {
+        switch literal {
         case .number(let value): return .number(value)
         case .string(let value): return .string(value)
         case .false: return .boolean(false)
@@ -50,30 +57,24 @@ extension Expression.Literal {
         case .nil: return .nil
         }
     }
-}
 
-extension Expression.Unary {
+    fileprivate func evaluateUnary(_ unary: Expression.Unary) throws -> Value {
 
-    fileprivate func evaluate() throws -> Value {
+        let value = try evaluateExpression(unary.expression)
 
-        let value = try expression.evaluate()
-
-        switch (`operator`, value) {
+        switch (unary.operator, value) {
         case (.negative, .number(let number)): return .number(-number)
         case (.negative, _): throw TypeMismatch(value: value, expected: .number(0))
         case (.not, _): return .boolean(value.isTruthy)
         }
     }
-}
 
-extension Expression.Binary {
+    fileprivate func evaluateBinary(_ binary: Expression.Binary) throws -> Value {
 
-    fileprivate func evaluate() throws -> Value {
+        let lhs = try evaluateExpression(binary.lhs)
+        let rhs = try evaluateExpression(binary.rhs)
 
-        let lhs = try self.lhs.evaluate()
-        let rhs = try self.rhs.evaluate()
-
-        switch (`operator`, lhs, rhs) {
+        switch (binary.operator, lhs, rhs) {
 
         case let (.plus, .number(lhs), .number(rhs)): return .number(lhs + rhs)
         case let (.minus, .number(lhs), .number(rhs)): return .number(lhs - rhs)
@@ -90,15 +91,17 @@ extension Expression.Binary {
         case (.equalEqual, _, _): return .boolean(lhs.isEqual(to: rhs))
         case (.notEqual, _, _): return .boolean(!lhs.isEqual(to: rhs))
 
-        default: throw BinaryOperationFailure(operator: `operator`, lhs: lhs, rhs: rhs)
+        default: throw BinaryOperationFailure(operator: binary.operator, lhs: lhs, rhs: rhs)
         }
     }
-}
 
-extension Expression.Grouping {
+    fileprivate func evaluateGrouping(_ grouping: Expression.Grouping) throws -> Value {
+        try evaluateExpression(grouping.expression)
+    }
 
-    fileprivate func evaluate() throws -> Value {
-        try expression.evaluate()
+    fileprivate func evaluateVariable(_ variable: Expression.Variable) throws -> Value {
+        guard let expression = try environment.get(variable) else { return .nil }
+        return try evaluateExpression(expression)
     }
 }
 
