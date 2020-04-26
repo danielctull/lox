@@ -9,7 +9,7 @@ class Interpreter {
 
     func interpret(_ statements: [Statement]) throws {
         for statement in statements {
-            try evaluate(statement)
+            try execute(statement)
         }
     }
 }
@@ -25,11 +25,12 @@ enum Value {
 
 extension Interpreter {
 
-    fileprivate func evaluate(_ statement: Statement) throws {
+    fileprivate func execute(_ statement: Statement) throws {
         switch statement {
         case let .print(expression): Swift.print(try evaluateExpression(expression))
         case let .expression(expression): _ = try evaluateExpression(expression)
         case let .var(variable, expression): environment.define(expression, for: variable)
+        case let .block(block): try executeBlock(block)
         }
     }
 }
@@ -37,6 +38,17 @@ extension Interpreter {
 // MARK: - Expressions
 
 extension Interpreter {
+
+    fileprivate func executeBlock(_ block: Statement.Block) throws {
+
+        let previous = environment
+        environment = Environment(enclosing: previous)
+        defer { environment = previous }
+
+        for statement in block.statements {
+            try execute(statement)
+        }
+    }
 
     fileprivate func evaluateExpression(_ expression: Expression) throws -> Value {
         switch expression {

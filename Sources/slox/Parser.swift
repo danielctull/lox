@@ -39,8 +39,19 @@ final class Parser {
 
     private func statement() throws -> Statement {
         if match(.print) { return try printStatement() }
+        if match(.leftBrace) { return try blockStatement() }
 
         return try expressionStatement()
+    }
+
+    private func blockStatement() throws -> Statement {
+        var statements: [Statement] = []
+        while (!check(.rightBrace) && !isAtEnd) {
+            statements.append(try declaration())
+        }
+        try consume(type: .rightBrace)
+        return .block(statements)
+
     }
 
     private func printStatement() throws -> Statement {
