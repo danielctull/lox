@@ -1,30 +1,43 @@
 
 import Foundation
 
-struct Environment {
+class Environment {
+
+    let enclosing: Environment?
+    init(enclosing: Environment? = nil) {
+        self.enclosing = enclosing
+    }
 
     private var expressions: [Expression.Variable: Expression?] = [:]
 
-    mutating func define(_ expression: Expression?, for variable: Expression.Variable) {
+    func define(_ expression: Expression?, for variable: Expression.Variable) {
         expressions[variable] = expression
     }
 
     func get(_ variable: Expression.Variable) throws -> Expression? {
 
-        guard let expression = expressions[variable] else {
-            throw UndefinedVariable(variable: variable)
+        if let expression = expressions[variable] {
+            return expression
         }
 
-        return expression
+        if let enclosing = enclosing {
+            return try enclosing.get(variable)
+        }
+
+        throw UndefinedVariable(variable: variable)
     }
 
-    mutating func assign(_ expression: Expression, for variable: Expression.Variable) throws {
+    func assign(_ expression: Expression, for variable: Expression.Variable) throws {
 
-        guard expressions.keys.contains(variable) else {
-            throw UndefinedVariable(variable: variable)
+        if expressions.keys.contains(variable) {
+            expressions[variable] = expression
         }
 
-        expressions[variable] = expression
+        if let enclosing = enclosing {
+            try enclosing.assign(expression, for: variable)
+        }
+
+        throw UndefinedVariable(variable: variable)
     }
 }
 
