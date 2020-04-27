@@ -38,6 +38,7 @@ final class Parser {
     }
 
     private func statement() throws -> Statement {
+        if match(.if) { return try ifStatement() }
         if match(.print) { return try printStatement() }
         if match(.leftBrace) { return try blockStatement() }
 
@@ -51,6 +52,18 @@ final class Parser {
         }
         try consume(type: .rightBrace)
         return .block(statements)
+    }
+
+    private func ifStatement() throws -> Statement {
+        try consume(type: .leftParenthesis)
+        let condition = try expression()
+        try consume(type: .rightParenthesis)
+
+        let then = try statement()
+        var `else`: Statement? = nil
+        if match(.else) { `else` = try statement() }
+
+        return .if(condition: condition, then: then, else: `else`)
 
     }
 

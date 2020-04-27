@@ -27,6 +27,7 @@ extension Interpreter {
 
     fileprivate func execute(_ statement: Statement) throws {
         switch statement {
+        case let .if(statement): try executeIf(statement)
         case let .print(expression): Swift.print(try evaluateExpression(expression))
         case let .expression(expression): _ = try evaluateExpression(expression)
         case let .var(variable, expression): environment.define(expression, for: variable)
@@ -47,6 +48,14 @@ extension Interpreter {
 
         for statement in block.statements {
             try execute(statement)
+        }
+    }
+
+    fileprivate func executeIf(_ statement: Statement.If) throws {
+        if try evaluateExpression(statement.condition).isTruthy {
+            try execute(statement.then)
+        } else if let elseBranch = statement.else {
+            try execute(elseBranch)
         }
     }
 
