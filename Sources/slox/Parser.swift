@@ -40,6 +40,7 @@ final class Parser {
     private func statement() throws -> Statement {
         if match(.if) { return try ifStatement() }
         if match(.print) { return try printStatement() }
+        if match(.while) { return try whileStatement() }
         if match(.leftBrace) { return try blockStatement() }
 
         return try expressionStatement()
@@ -71,6 +72,14 @@ final class Parser {
         let expression = try self.expression()
         try consume(type: .semicolon)
         return .print(expression)
+    }
+
+    private func whileStatement() throws -> Statement {
+        try consume(type: .leftParenthesis)
+        let condition = try expression()
+        try consume(type: .rightParenthesis)
+        let body = try statement()
+        return .while(condition: condition, body: body)
     }
 
     private func varStatement() throws -> Statement {

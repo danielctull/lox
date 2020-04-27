@@ -31,6 +31,7 @@ extension Interpreter {
         case let .print(expression): Swift.print(try evaluateExpression(expression))
         case let .expression(expression): _ = try evaluateExpression(expression)
         case let .var(variable, expression): environment.define(expression, for: variable)
+        case let .while(statement): try executeWhile(statement)
         case let .block(block): try executeBlock(block)
         }
     }
@@ -56,6 +57,13 @@ extension Interpreter {
             try execute(statement.then)
         } else if let elseBranch = statement.else {
             try execute(elseBranch)
+        }
+    }
+
+    fileprivate func executeWhile(_ statement: Statement.While) throws {
+
+        while try evaluateExpression(statement.condition).isTruthy {
+            try execute(statement.body)
         }
     }
 
