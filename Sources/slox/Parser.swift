@@ -93,7 +93,7 @@ final class Parser {
 
     private func assignment() throws -> Expression {
 
-        let expression = try equality()
+        let expression = try or()
 
         if match(.equal) {
             let value = try assignment()
@@ -107,6 +107,30 @@ final class Parser {
             // confused state where we need to go into panic mode and
             // synchronize.
             errors.append(InvalidAssignmentTarget(lhs: expression, rhs: value))
+        }
+
+        return expression
+    }
+
+    private func or() throws -> Expression {
+
+        var expression = try and()
+
+        while match(.or) {
+            let rhs = try and()
+            expression = .logical(lhs: expression, operator: .or, rhs: rhs)
+        }
+
+        return expression
+    }
+
+    private func and() throws -> Expression {
+
+        var expression = try equality()
+
+        while match(.and) {
+            let rhs = try equality()
+            expression = .logical(lhs: expression, operator: .and, rhs: rhs)
         }
 
         return expression

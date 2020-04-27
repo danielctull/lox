@@ -63,6 +63,7 @@ extension Interpreter {
         switch expression {
         case let .assignment(assignment): return try evaluateAssignment(assignment)
         case let .literal(literal): return evaluateLiteral(literal)
+        case let .logical(logical): return try evaluateLogical(logical)
         case let .unary(unary): return try evaluateUnary(unary)
         case let .binary(binary): return try evaluateBinary(binary)
         case let .grouping(grouping): return try evaluateGrouping(grouping)
@@ -83,6 +84,16 @@ extension Interpreter {
         case .false: return .boolean(false)
         case .true: return .boolean(true)
         case .nil: return .nil
+        }
+    }
+
+    fileprivate func evaluateLogical(_ logical: Expression.Logical) throws -> Value {
+
+        let lhs = try evaluateExpression(logical.lhs)
+        switch (logical.operator, lhs.isTruthy) {
+        case (.or, true): return lhs
+        case (.and, false): return lhs
+        default: return try evaluateExpression(logical.rhs)
         }
     }
 

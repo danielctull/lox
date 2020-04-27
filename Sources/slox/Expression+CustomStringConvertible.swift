@@ -5,6 +5,7 @@ extension Expression: CustomStringConvertible {
         switch self {
         case .assignment(let assignment): return assignment.description
         case .literal(let literal): return literal.description
+        case .logical(let logical): return logical.description
         case .unary(let unary): return unary.description
         case .binary(let binary): return binary.description
         case .grouping(let grouping): return grouping.description
@@ -26,6 +27,21 @@ extension Expression.Literal: CustomStringConvertible {
         case .true: return "true"
         case .false: return "false"
         case .nil: return "nil"
+        }
+    }
+}
+
+extension Expression.Logical: CustomStringConvertible {
+
+    var description: String { "(\(`operator`) \(lhs) \(rhs))" }
+}
+
+extension Expression.Logical.Operator: CustomStringConvertible {
+
+    var description: String {
+        switch self {
+        case .and: return "and"
+        case .or: return "or"
         }
     }
 }

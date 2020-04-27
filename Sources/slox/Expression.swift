@@ -3,6 +3,7 @@ indirect enum Expression {
 
     case assignment(Assignment)
     case literal(Literal)
+    case logical(Logical)
     case unary(Unary)
     case binary(Binary)
     case grouping(Grouping)
@@ -19,6 +20,18 @@ indirect enum Expression {
         case `true`
         case `false`
         case `nil`
+    }
+
+    struct Logical {
+
+        enum Operator {
+            case or
+            case and
+        }
+
+        let lhs: Expression
+        let `operator`: Operator
+        let rhs: Expression
     }
 
     struct Unary {
@@ -74,6 +87,13 @@ extension Expression {
                        rhs: Expression) -> Expression {
 
         .binary(Binary(lhs: lhs, operator: `operator`, rhs: rhs))
+    }
+
+    static func logical(lhs: Expression,
+                        `operator`: Logical.Operator,
+                        rhs: Expression) -> Expression {
+
+        .logical(Logical(lhs: lhs, operator: `operator`, rhs: rhs))
     }
 
     static func unary(`operator`: Unary.Operator,
