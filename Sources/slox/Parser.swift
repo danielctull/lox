@@ -38,6 +38,7 @@ final class Parser {
     }
 
     private func statement() throws -> Statement {
+        if match(.for) { return try forStatement() }
         if match(.if) { return try ifStatement() }
         if match(.print) { return try printStatement() }
         if match(.while) { return try whileStatement() }
@@ -53,6 +54,68 @@ final class Parser {
         }
         try consume(type: .rightBrace)
         return .block(statements)
+    }
+
+    // This desugars a for loop into a while loop.
+    // So the following:
+    //
+    // for (var i = 0; i < 10; i = i + 1) print i;
+    //
+    // Becomes:
+    //
+    // {
+    //   var i = 0;
+    //   while (i < 10) {
+    //     print i;
+    //     i = i + 1;
+    //   }
+    // }
+    private func forStatement() throws -> Statement {
+
+        try consume(type: .leftParenthesis)
+
+        let initializer: Statement?
+        if match(.semicolon) {
+            initializer = nil
+        } else if match(.var) {
+            initializer = try varStatement()
+        } else {
+            initializer = try expressionStatement()
+        }
+
+        // If the condition is omitted, we jam in true to make an infinite loop.
+        let condition: Expression
+        if !check(.semicolon) {
+            condition = try expression()
+        } else {
+            condition = .literal(.true)
+        }
+        try consume(type: .semicolon)
+
+        let increment: Expression?
+        if !check(.rightParenthesis) {
+            increment = try expression()
+        } else {
+            increment = nil
+        }
+        try consume(type: .rightParenthesis)
+
+        var body = try statement()
+
+        // Add the increment to the end of the body.
+        if let increment = increment {
+            body = .block([body, .expression(increment)])
+        }
+
+        // Add the condition
+        body = .while(condition: condition, body: body)
+
+        // Prepend the initializer to before the while loop.
+        if let initializer = initializer {
+            body = .block([initializer, body])
+        }
+
+        return body
     }
 
     private func ifStatement() throws -> Statement {
