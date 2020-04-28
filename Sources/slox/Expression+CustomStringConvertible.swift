@@ -15,7 +15,7 @@ extension Expression: CustomStringConvertible {
 }
 
 extension Expression.Assignment: CustomStringConvertible {
-    var description: String { "(= \(variable.name) \(expression))" }
+    var description: String { "(= \(variable) \(expression))" }
 }
 
 extension Expression.Literal: CustomStringConvertible {
