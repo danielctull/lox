@@ -31,10 +31,12 @@ class Environment {
 
         if expressions.keys.contains(variable) {
             expressions[variable] = expression
+            return
         }
 
         if let enclosing = enclosing {
             try enclosing.assign(expression, for: variable)
+            return
         }
 
         throw UndefinedVariable(variable: variable)
