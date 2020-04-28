@@ -9,6 +9,7 @@ extension Expression: CustomStringConvertible {
         case .unary(let unary): return unary.description
         case .binary(let binary): return binary.description
         case .grouping(let grouping): return grouping.description
+        case .value(let value): return value.description
         case .variable(let variable): return variable.description
         }
     }

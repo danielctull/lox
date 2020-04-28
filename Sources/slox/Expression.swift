@@ -7,6 +7,7 @@ indirect enum Expression {
     case unary(Unary)
     case binary(Binary)
     case grouping(Grouping)
+    case value(Value)
     case variable(Variable)
 
     struct Assignment {

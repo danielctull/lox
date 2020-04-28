@@ -75,13 +75,14 @@ extension Interpreter {
         case let .unary(unary): return try evaluateUnary(unary)
         case let .binary(binary): return try evaluateBinary(binary)
         case let .grouping(grouping): return try evaluateGrouping(grouping)
+        case let .value(value): return value
         case let .variable(variable): return try evaluateVariable(variable)
         }
     }
 
     fileprivate func evaluateAssignment(_ assignment: Expression.Assignment) throws -> Value {
         let value = try evaluateExpression(assignment.expression)
-        try environment.assign(assignment.expression, for: assignment.variable)
+        try environment.assign(.value(value), for: assignment.variable)
         return value
     }
 
