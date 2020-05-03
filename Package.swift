@@ -3,7 +3,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "swift-lox",
+    name: "lox",
     platforms: [
         .macOS(.v10_13),
     ],
