@@ -8,7 +8,8 @@ let package = Package(
         .macOS(.v10_13),
     ],
     products: [
-        .executable(name: "slox", targets: ["slox"]),
+        .executable(name: "lox", targets: ["lox"]),
+        .library(name: "slox", targets: ["slox"]),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser", from: "0.0.1"),
@@ -16,9 +17,12 @@ let package = Package(
     targets: [
 
         .target(
-            name: "slox",
+            name: "lox",
             dependencies: [
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
+                "slox",
             ]),
+
+        .target(name: "slox"),
     ]
 )

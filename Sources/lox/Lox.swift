@@ -1,6 +1,7 @@
 
 import ArgumentParser
 import Foundation
+import slox
 
 struct Lox: ParsableCommand {
 

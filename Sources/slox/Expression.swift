@@ -1,5 +1,5 @@
 
-indirect enum Expression {
+public indirect enum Expression {
 
     case assignment(Assignment)
     case literal(Literal)
@@ -10,12 +10,12 @@ indirect enum Expression {
     case value(Value)
     case variable(Variable)
 
-    struct Assignment {
+    public struct Assignment {
         let variable: Variable
         let expression: Expression
     }
 
-    enum Literal {
+    public enum Literal {
         case number(Double)
         case string(String)
         case `true`
@@ -23,7 +23,7 @@ indirect enum Expression {
         case `nil`
     }
 
-    struct Logical {
+    public struct Logical {
 
         enum Operator {
             case or
@@ -35,7 +35,7 @@ indirect enum Expression {
         let rhs: Expression
     }
 
-    struct Unary {
+    public struct Unary {
 
         enum Operator {
             case negative
@@ -46,7 +46,7 @@ indirect enum Expression {
         let expression: Expression
     }
 
-    struct Binary {
+    public struct Binary {
 
         enum Operator {
             case equalEqual
@@ -66,11 +66,11 @@ indirect enum Expression {
         let rhs: Expression
     }
 
-    struct Grouping {
+    public struct Grouping {
         let expression: Expression
     }
 
-    struct Variable: Hashable {
+    public struct Variable: Hashable {
         let name: String
     }
 }

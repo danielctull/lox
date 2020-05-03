@@ -1,7 +1,7 @@
 
 extension Expression: CustomStringConvertible {
 
-    var description: String {
+    public var description: String {
         switch self {
         case .assignment(let assignment): return assignment.description
         case .literal(let literal): return literal.description
@@ -16,12 +16,12 @@ extension Expression: CustomStringConvertible {
 }
 
 extension Expression.Assignment: CustomStringConvertible {
-    var description: String { "(= \(variable) \(expression))" }
+    public var description: String { "(= \(variable) \(expression))" }
 }
 
 extension Expression.Literal: CustomStringConvertible {
 
-    var description: String {
+    public var description: String {
         switch self {
         case .number(let number): return number.description
         case .string(let string): return string
@@ -34,7 +34,7 @@ extension Expression.Literal: CustomStringConvertible {
 
 extension Expression.Logical: CustomStringConvertible {
 
-    var description: String { "(\(`operator`) \(lhs) \(rhs))" }
+    public var description: String { "(\(`operator`) \(lhs) \(rhs))" }
 }
 
 extension Expression.Logical.Operator: CustomStringConvertible {
@@ -48,7 +48,7 @@ extension Expression.Logical.Operator: CustomStringConvertible {
 }
 
 extension Expression.Unary: CustomStringConvertible {
-    var description: String { "(\(`operator`) \(expression))" }
+    public var description: String { "(\(`operator`) \(expression))" }
 }
 
 extension Expression.Unary.Operator: CustomStringConvertible {
@@ -63,7 +63,7 @@ extension Expression.Unary.Operator: CustomStringConvertible {
 
 extension Expression.Binary: CustomStringConvertible {
 
-    var description: String { "(\(`operator`) \(lhs) \(rhs))" }
+    public var description: String { "(\(`operator`) \(lhs) \(rhs))" }
 }
 
 extension Expression.Binary.Operator: CustomStringConvertible {
@@ -85,10 +85,10 @@ extension Expression.Binary.Operator: CustomStringConvertible {
 }
 
 extension Expression.Grouping: CustomStringConvertible {
-    var description: String { "(group \(expression))" }
+    public var description: String { "(group \(expression))" }
 }
 
 
 extension Expression.Variable: CustomStringConvertible {
-    var description: String { "(var \(name))" }
+    public var description: String { "(var \(name))" }
 }

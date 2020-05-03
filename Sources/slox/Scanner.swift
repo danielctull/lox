@@ -1,7 +1,7 @@
 
 import Foundation
 
-final class Scanner {
+public final class Scanner {
 
     private let keywords: [String: TokenType] = [
         "and": .and,
@@ -23,7 +23,7 @@ final class Scanner {
     ]
 
     private let source: String
-    init(source: String) {
+    public init(source: String) {
         self.source = source
         start = source.startIndex
         current = start
@@ -35,7 +35,7 @@ final class Scanner {
     private var current: String.Index
     private var line = 1
 
-    func scanTokens() throws -> [Token] {
+    public func scanTokens() throws -> [Token] {
 
         errors = []
         tokens = []

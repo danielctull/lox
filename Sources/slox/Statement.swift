@@ -1,5 +1,5 @@
 
-indirect enum Statement {
+public indirect enum Statement {
     case block(Block)
     case expression(Expression)
     case `if`(If)
@@ -10,17 +10,17 @@ indirect enum Statement {
 
 extension Statement {
 
-    struct If {
+    public struct If {
         let condition: Expression
         let then: Statement
         let `else`: Statement?
     }
 
-    struct Block {
+    public struct Block {
         let statements: [Statement]
     }
 
-    struct While {
+    public struct While {
         let condition: Expression
         let body: Statement
     }

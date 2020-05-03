@@ -1,17 +1,17 @@
 
 import Foundation
 
-final class Parser {
+public final class Parser {
 
     private let tokens: [Token]
     private var errors: [Error] = []
     private var current = 0
 
-    init(tokens: [Token]) {
+    public init(tokens: [Token]) {
         self.tokens = tokens
     }
 
-    func parse() throws -> [Statement] {
+    public func parse() throws -> [Statement] {
         var statements: [Statement] = []
         while !isAtEnd {
 

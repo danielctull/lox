@@ -1,7 +1,7 @@
 
 extension Statement: CustomStringConvertible {
 
-    var description: String {
+    public var description: String {
         switch self {
         case let .block(block): return block.description
         case let .expression(expression): return expression.description
@@ -15,19 +15,19 @@ extension Statement: CustomStringConvertible {
 
 extension Statement.Block: CustomStringConvertible {
 
-    var description: String {
+    public var description: String {
         "(block \(statements.map(\.description).joined(separator: " ")))"
     }
 }
 
 extension Statement.If: CustomStringConvertible {
 
-    var description: String {
+    public var description: String {
         let elsePart = self.else.map(\.description).map { " else " + $0 }
         return "(if \(condition) then \(then)\(elsePart ?? "")"
     }
 }
 
 extension Statement.While: CustomStringConvertible {
-    var description: String { "(while \(condition) \(body))" }
+    public var description: String { "(while \(condition) \(body))" }
 }

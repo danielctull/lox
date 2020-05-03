@@ -1,5 +1,5 @@
 
-struct Token {
+public struct Token {
     let type: TokenType
     let lexeme: String
     let line: Int
@@ -7,5 +7,5 @@ struct Token {
 
 extension Token: CustomStringConvertible {
 
-    var description: String { "\(type) \(lexeme)" }
+    public var description: String { "\(type) \(lexeme)" }
 }

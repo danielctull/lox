@@ -1,20 +1,20 @@
 
 import Foundation
 
-class Interpreter {
+public final class Interpreter {
 
-    init() {}
+    public init() {}
 
     var environment = Environment()
 
-    func interpret(_ statements: [Statement]) throws {
+    public func interpret(_ statements: [Statement]) throws {
         for statement in statements {
             try execute(statement)
         }
     }
 }
 
-enum Value {
+public enum Value {
     case string(String)
     case number(Double)
     case boolean(Bool)
@@ -176,7 +176,7 @@ extension Value {
 
 extension Value: CustomStringConvertible {
 
-    var description: String {
+    public var description: String {
         switch self {
         case let .boolean(value): return value.description
         case let .number(value): return value.description
