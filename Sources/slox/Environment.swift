@@ -1,9 +1,9 @@
 
 import Foundation
 
-class Environment {
+final class Environment {
 
-    let enclosing: Environment?
+    private let enclosing: Environment?
     init(enclosing: Environment? = nil) {
         self.enclosing = enclosing
     }
