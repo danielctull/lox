@@ -6,6 +6,7 @@ public indirect enum Expression {
     case logical(Logical)
     case unary(Unary)
     case binary(Binary)
+    case call(Call)
     case grouping(Grouping)
     case value(Value)
     case variable(Variable)
@@ -66,6 +67,12 @@ public indirect enum Expression {
         let rhs: Expression
     }
 
+    public struct Call {
+        let callee: Expression
+        let arguments: [Expression]
+        let line: Int
+    }
+
     public struct Grouping {
         let expression: Expression
     }
@@ -88,6 +95,10 @@ extension Expression {
                        rhs: Expression) -> Expression {
 
         .binary(Binary(lhs: lhs, operator: `operator`, rhs: rhs))
+    }
+
+    static func call(callee: Expression, arguments: [Expression], line: Int) -> Expression {
+        .call(Call(callee: callee, arguments: arguments, line: line))
     }
 
     static func logical(lhs: Expression,

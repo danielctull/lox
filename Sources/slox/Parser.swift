@@ -300,7 +300,7 @@ public final class Parser {
 
     private func unary() throws -> Expression {
 
-        guard match(.bang, .minus) else { return try primary() }
+        guard match(.bang, .minus) else { return try call() }
 
         let `operator`: Expression.Unary.Operator = try {
             switch previous.type {
@@ -312,6 +312,42 @@ public final class Parser {
 
         return .unary(operator: `operator`,
                       expression: try unary())
+    }
+
+    private func call() throws -> Expression {
+
+        var expression = try primary()
+
+        while (true) {
+            if match(.leftParenthesis) {
+                expression = try finishCall(callee: expression)
+            } else {
+                break
+            }
+        }
+
+        return expression
+    }
+
+    private func finishCall(callee: Expression) throws -> Expression {
+
+        var arguments: [Expression] = []
+
+        if (!check(.rightParenthesis)) {
+            repeat {
+                arguments.append(try expression())
+            } while match(.comma)
+        }
+
+        if arguments.count > 255 {
+            errors.append(TooManyArguments(callee: callee))
+        }
+
+        let parenthesis = try consume(type: .rightParenthesis)
+
+        return .call(callee: callee,
+                     arguments: arguments,
+                     line: parenthesis.line)
     }
 
     private func primary() throws -> Expression {
@@ -397,6 +433,13 @@ public final class Parser {
     private var peek: Token { tokens[current] }
 
     private var previous: Token { tokens[current - 1] }
+}
+
+struct TooManyArguments: LocalizedError {
+    let callee: Expression
+    var errorDescription: String? {
+        "Cannot have more than 255 arguments. \(callee)"
+    }
 }
 
 struct InvalidAssignmentTarget: LocalizedError {

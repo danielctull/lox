@@ -74,6 +74,7 @@ extension Interpreter {
         case let .logical(logical): return try evaluateLogical(logical)
         case let .unary(unary): return try evaluateUnary(unary)
         case let .binary(binary): return try evaluateBinary(binary)
+        case let .call(call): return try evaluateCall(call)
         case let .grouping(grouping): return try evaluateGrouping(grouping)
         case let .value(value): return value
         case let .variable(variable): return try evaluateVariable(variable)
@@ -141,6 +142,21 @@ extension Interpreter {
 
         default: throw BinaryOperationFailure(operator: binary.operator, lhs: lhs, rhs: rhs)
         }
+    }
+
+    fileprivate func evaluateCall(_ call: Expression.Call) throws -> Value {
+        let callee = try evaluateExpression(call.callee)
+        let arguments = try call.arguments.map(evaluateExpression)
+
+        guard let callable = callee as? LoxCallable else {
+            throw NotCallable(value: callee)
+        }
+
+        guard arguments.count == callable.arity else {
+            throw IncorrectArgumentCount(expected: callable.arity, actual: arguments.count)
+        }
+
+        return try callable.call(interpreter: self, arguments: arguments)
     }
 
     fileprivate func evaluateGrouping(_ grouping: Expression.Grouping) throws -> Value {
@@ -217,5 +233,20 @@ struct TypeMismatch: LocalizedError {
 
     var errorDescription: String? {
         "Expected \(expected.typeName) but found \(value.typeName)."
+    }
+}
+
+struct NotCallable: LocalizedError {
+    let value: Value
+    var errorDescription: String? {
+        "\(value) is not callable."
+    }
+}
+
+struct IncorrectArgumentCount: LocalizedError {
+    let expected: Int
+    let actual: Int
+    var errorDescription: String? {
+        "Expected \(expected) arguments but got \(actual)."
     }
 }

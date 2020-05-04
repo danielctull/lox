@@ -8,6 +8,7 @@ extension Expression: CustomStringConvertible {
         case .logical(let logical): return logical.description
         case .unary(let unary): return unary.description
         case .binary(let binary): return binary.description
+        case .call(let call): return call.description
         case .grouping(let grouping): return grouping.description
         case .value(let value): return value.description
         case .variable(let variable): return variable.description
@@ -81,6 +82,14 @@ extension Expression.Binary.Operator: CustomStringConvertible {
         case .multiply: return "*"
         case .divide: return "/"
         }
+    }
+}
+
+extension Expression.Call: CustomStringConvertible {
+
+    public var description: String {
+        let args = arguments.map(\.description).joined(separator: ", ")
+        return "(call \(callee) \(args))"
     }
 }
 
