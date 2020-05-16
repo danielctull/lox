@@ -64,10 +64,12 @@ extension Interpreter {
 
     fileprivate func evaluateFunction(_ statement: Statement.Function) throws {
 
+        let closure = environment
+
         let function = Callable(description: statement.description, arity: statement.parameters.count) {
             (interpreter, arguments) -> Value in
 
-            let environment = Environment(name: statement.name.name, enclosing: interpreter.globals)
+            let environment = Environment(name: statement.name.name, enclosing: closure)
 
             for (parameter, argument) in zip(statement.parameters, arguments) {
                environment.define(.value(argument), for: parameter)
@@ -183,10 +185,10 @@ extension Interpreter {
     }
 
     fileprivate func evaluateCall(_ call: Expression.Call) throws -> Value {
-        guard let expression = try environment.get(call.callee) else { return .nil }
+        let callee = try evaluateVariable(call.callee)
         let arguments = try call.arguments.map(evaluateExpression)
 
-        guard case let .value(.callable(function)) = expression else {
+        guard case let .callable(function) = callee else {
             throw NotCallable(value: call.callee)
         }
 
