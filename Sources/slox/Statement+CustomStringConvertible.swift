@@ -8,8 +8,9 @@ extension Statement: CustomStringConvertible {
         case let .function(function): return function.description
         case let .if(statement): return statement.description
         case let .print(expression): return "(print \(expression))"
+        case let .return(expression): return "(return \(expression))"
         case let .var(variable, expression): return "(define \(variable) \(expression?.description ?? ""))"
-        case let .`while`(statement): return statement.description
+        case let .while(statement): return statement.description
         }
     }
 }

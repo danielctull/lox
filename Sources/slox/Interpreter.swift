@@ -27,6 +27,7 @@ extension Interpreter {
         case let .if(statement): try executeIf(statement)
         case let .function(function): try evaluateFunction(function)
         case let .print(expression): Swift.print(try evaluateExpression(expression))
+        case let .return(expression): try evaluateReturn(expression)
         case let .expression(expression): _ = try evaluateExpression(expression)
         case let .var(variable, expression): environment.define(expression, for: variable)
         case let .while(statement): try executeWhile(statement)
@@ -50,6 +51,12 @@ extension Interpreter {
         }
     }
 
+    // Used to unwind the call stack from the evaluation of the return to
+    // the execution of the function.
+    private struct Return: Error {
+        let value: Value
+    }
+
     fileprivate func evaluateFunction(_ statement: Statement.Function) throws {
 
         let function = Callable(description: "Lox Function", arity: statement.parameters.count) {
@@ -61,12 +68,21 @@ extension Interpreter {
                environment.define(.value(argument), for: parameter)
             }
 
-            try interpreter.executeBlock(statement.body, using: environment)
+            do {
+                try interpreter.executeBlock(statement.body, using: environment)
+            } catch let returnError as Return {
+                return returnError.value
+            }
 
             return .nil
         }
 
         environment.define(.value(.callable(function)), for: statement.name)
+    }
+
+    fileprivate func evaluateReturn(_ expression: Expression) throws {
+        let value = try evaluateExpression(expression)
+        throw Return(value: value)
     }
 
     fileprivate func executeIf(_ statement: Statement.If) throws {

@@ -5,6 +5,7 @@ public indirect enum Statement {
     case function(Function)
     case `if`(If)
     case print(Expression)
+    case `return`(Expression)
     case `var`(Expression.Variable, Expression?)
     case `while`(While)
 }

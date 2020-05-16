@@ -42,6 +42,7 @@ public final class Parser {
         if match(.for) { return try forStatement() }
         if match(.if) { return try ifStatement() }
         if match(.print) { return try printStatement() }
+        if match(.return) { return try returnStatement() }
         if match(.while) { return try whileStatement() }
         if match(.leftBrace) { return try .block(blockStatement()) }
 
@@ -136,6 +137,15 @@ public final class Parser {
         let expression = try self.expression()
         try consume(type: .semicolon)
         return .print(expression)
+    }
+
+    private func returnStatement() throws -> Statement {
+        var value = Expression.value(.nil)
+        if !check(.semicolon) {
+            value = try expression()
+        }
+        try consume(type: .semicolon)
+        return .return(value)
     }
 
     private func whileStatement() throws -> Statement {
