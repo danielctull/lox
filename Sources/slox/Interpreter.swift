@@ -22,7 +22,7 @@ public final class Interpreter {
 
 extension Interpreter {
 
-    fileprivate func execute(_ statement: Statement) throws {
+    private func execute(_ statement: Statement) throws {
         switch statement {
         case let .if(statement): try executeIf(statement)
         case let .function(function): try evaluateFunction(function)
@@ -40,7 +40,7 @@ extension Interpreter {
 
 extension Interpreter {
 
-    fileprivate func executeBlock(_ block: Statement.Block, using new: Environment) throws {
+    private func executeBlock(_ block: Statement.Block, using new: Environment) throws {
 
         let previous = environment
         environment = new
@@ -57,12 +57,12 @@ extension Interpreter {
         let value: Value
     }
 
-    fileprivate func evaluateVar(variable: Expression.Variable, expression: Expression?) throws {
+    private func evaluateVar(variable: Expression.Variable, expression: Expression?) throws {
         let value = try expression.map(evaluateExpression)
         environment.define(value, for: variable)
     }
 
-    fileprivate func evaluateFunction(_ statement: Statement.Function) throws {
+    private func evaluateFunction(_ statement: Statement.Function) throws {
 
         let closure = environment
 
@@ -87,12 +87,12 @@ extension Interpreter {
         environment.define(.callable(function), for: statement.name)
     }
 
-    fileprivate func evaluateReturn(_ expression: Expression) throws {
+    private func evaluateReturn(_ expression: Expression) throws {
         let value = try evaluateExpression(expression)
         throw Return(value: value)
     }
 
-    fileprivate func executeIf(_ statement: Statement.If) throws {
+    private func executeIf(_ statement: Statement.If) throws {
         if try evaluateExpression(statement.condition).isTruthy {
             try execute(statement.then)
         } else if let elseBranch = statement.else {
@@ -100,14 +100,14 @@ extension Interpreter {
         }
     }
 
-    fileprivate func executeWhile(_ statement: Statement.While) throws {
+    private func executeWhile(_ statement: Statement.While) throws {
 
         while try evaluateExpression(statement.condition).isTruthy {
             try execute(statement.body)
         }
     }
 
-    fileprivate func evaluateExpression(_ expression: Expression) throws -> Value {
+    private func evaluateExpression(_ expression: Expression) throws -> Value {
         switch expression {
         case let .assignment(assignment): return try evaluateAssignment(assignment)
         case let .literal(literal): return evaluateLiteral(literal)
@@ -121,13 +121,13 @@ extension Interpreter {
         }
     }
 
-    fileprivate func evaluateAssignment(_ assignment: Expression.Assignment) throws -> Value {
+    private func evaluateAssignment(_ assignment: Expression.Assignment) throws -> Value {
         let value = try evaluateExpression(assignment.expression)
         try environment.assign(value, for: assignment.variable)
         return value
     }
 
-    fileprivate func evaluateLiteral(_ literal: Expression.Literal) -> Value {
+    private func evaluateLiteral(_ literal: Expression.Literal) -> Value {
         switch literal {
         case .number(let value): return .number(value)
         case .string(let value): return .string(value)
@@ -137,7 +137,7 @@ extension Interpreter {
         }
     }
 
-    fileprivate func evaluateLogical(_ logical: Expression.Logical) throws -> Value {
+    private func evaluateLogical(_ logical: Expression.Logical) throws -> Value {
 
         let lhs = try evaluateExpression(logical.lhs)
         switch (logical.operator, lhs.isTruthy) {
@@ -147,7 +147,7 @@ extension Interpreter {
         }
     }
 
-    fileprivate func evaluateUnary(_ unary: Expression.Unary) throws -> Value {
+    private func evaluateUnary(_ unary: Expression.Unary) throws -> Value {
 
         let value = try evaluateExpression(unary.expression)
 
@@ -158,7 +158,7 @@ extension Interpreter {
         }
     }
 
-    fileprivate func evaluateBinary(_ binary: Expression.Binary) throws -> Value {
+    private func evaluateBinary(_ binary: Expression.Binary) throws -> Value {
 
         let lhs = try evaluateExpression(binary.lhs)
         let rhs = try evaluateExpression(binary.rhs)
@@ -184,7 +184,7 @@ extension Interpreter {
         }
     }
 
-    fileprivate func evaluateCall(_ call: Expression.Call) throws -> Value {
+    private func evaluateCall(_ call: Expression.Call) throws -> Value {
         let callee = try evaluateVariable(call.callee)
         let arguments = try call.arguments.map(evaluateExpression)
 
@@ -199,11 +199,11 @@ extension Interpreter {
         return try function.call(self, arguments)
     }
 
-    fileprivate func evaluateGrouping(_ grouping: Expression.Grouping) throws -> Value {
+    private func evaluateGrouping(_ grouping: Expression.Grouping) throws -> Value {
         try evaluateExpression(grouping.expression)
     }
 
-    fileprivate func evaluateVariable(_ variable: Expression.Variable) throws -> Value {
+    private func evaluateVariable(_ variable: Expression.Variable) throws -> Value {
         try environment.get(variable) ?? .nil
     }
 }
