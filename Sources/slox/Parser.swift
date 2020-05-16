@@ -32,6 +32,7 @@ public final class Parser {
 
     private func declaration() throws -> Statement {
 
+        if match(.fun) { return try functionStatement() }
         if match(.var) { return try varStatement() }
 
         return try statement()
@@ -157,6 +158,32 @@ public final class Parser {
         let expression = try self.expression()
         try consume(type: .semicolon)
         return .expression(expression)
+    }
+
+    private func functionStatement() throws -> Statement {
+        let token = try consume(type: .identifier)
+        let name = Expression.Variable(name: token.lexeme)
+
+        // Parameters
+        try consume(type: .leftParenthesis)
+        var paramters: [Expression.Variable] = []
+        if !check(.rightParenthesis) {
+            repeat {
+                if paramters.count > 255 {
+                    errors.append(TooManyParameters(name: name))
+                }
+                let token = try consume(type: .identifier)
+                let parameter = Expression.Variable(name: token.lexeme)
+                paramters.append(parameter)
+            } while match(.comma)
+        }
+        try consume(type: .rightParenthesis)
+
+        // Body
+        try consume(type: .leftBrace)
+        let body = try blockStatement()
+
+        return .function(name: name, parameters: paramters, body: body)
     }
 
     private func expression() throws -> Expression {
@@ -444,6 +471,13 @@ struct TooManyArguments: LocalizedError {
     let callee: Expression
     var errorDescription: String? {
         "Cannot have more than 255 arguments. \(callee)"
+    }
+}
+
+struct TooManyParameters: LocalizedError {
+    let name: Expression.Variable
+    var errorDescription: String? {
+        "Cannot have more than 255 paramters. \(name)"
     }
 }
 

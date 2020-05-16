@@ -25,6 +25,7 @@ extension Interpreter {
     fileprivate func execute(_ statement: Statement) throws {
         switch statement {
         case let .if(statement): try executeIf(statement)
+        case let .function(function): fatalError()
         case let .print(expression): Swift.print(try evaluateExpression(expression))
         case let .expression(expression): _ = try evaluateExpression(expression)
         case let .var(variable, expression): environment.define(expression, for: variable)

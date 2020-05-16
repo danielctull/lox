@@ -2,6 +2,7 @@
 public indirect enum Statement {
     case block(Block)
     case expression(Expression)
+    case function(Function)
     case `if`(If)
     case print(Expression)
     case `var`(Expression.Variable, Expression?)
@@ -9,6 +10,12 @@ public indirect enum Statement {
 }
 
 extension Statement {
+
+    public struct Function {
+        let name: Expression.Variable
+        let parameters: [Expression.Variable]
+        let body: Statement
+    }
 
     public struct If {
         let condition: Expression
@@ -32,6 +39,12 @@ extension Statement {
 
     static func block(_ statements: [Statement]) -> Statement {
         .block(Block(statements: statements))
+    }
+
+    static func function(name: Expression.Variable,
+                         parameters: [Expression.Variable],
+                         body: Statement) -> Statement {
+        .function(Function(name: name, parameters: parameters, body: body))
     }
 
     static func `if`(condition: Expression, then: Statement, else: Statement?) -> Statement {
