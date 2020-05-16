@@ -14,13 +14,6 @@ public final class Interpreter {
     }
 }
 
-public enum Value {
-    case string(String)
-    case number(Double)
-    case boolean(Bool)
-    case `nil`
-}
-
 // MARK: - Statements
 
 extension Interpreter {
