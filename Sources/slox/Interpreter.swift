@@ -8,7 +8,7 @@ public final class Interpreter {
         globals.define(.function { .number(Date().timeIntervalSince1970) }, for: "clock")
     }
 
-    let globals = Environment()
+    let globals = Environment(name: "Global")
     var environment: Environment
 
     public func interpret(_ statements: [Statement]) throws {
@@ -31,7 +31,7 @@ extension Interpreter {
         case let .expression(expression): _ = try evaluateExpression(expression)
         case let .var(variable, expression): environment.define(expression, for: variable)
         case let .while(statement): try executeWhile(statement)
-        case let .block(block): try executeBlock(block, using: Environment(enclosing: environment))
+        case let .block(block): try executeBlock(block, using: Environment(name: "Block", enclosing: environment))
         }
     }
 }
@@ -62,7 +62,7 @@ extension Interpreter {
         let function = Callable(description: statement.description, arity: statement.parameters.count) {
             (interpreter, arguments) -> Value in
 
-            let environment = Environment(enclosing: interpreter.globals)
+            let environment = Environment(name: statement.name.name, enclosing: interpreter.globals)
 
             for (parameter, argument) in zip(statement.parameters, arguments) {
                environment.define(.value(argument), for: parameter)
