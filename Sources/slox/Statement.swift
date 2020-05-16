@@ -14,7 +14,7 @@ extension Statement {
     public struct Function {
         let name: Expression.Variable
         let parameters: [Expression.Variable]
-        let body: Statement
+        let body: Statement.Block
     }
 
     public struct If {
@@ -43,7 +43,7 @@ extension Statement {
 
     static func function(name: Expression.Variable,
                          parameters: [Expression.Variable],
-                         body: Statement) -> Statement {
+                         body: Statement.Block) -> Statement {
         .function(Function(name: name, parameters: parameters, body: body))
     }
 

@@ -25,12 +25,12 @@ extension Interpreter {
     fileprivate func execute(_ statement: Statement) throws {
         switch statement {
         case let .if(statement): try executeIf(statement)
-        case let .function(function): fatalError()
+        case let .function(function): try evaluateFunction(function)
         case let .print(expression): Swift.print(try evaluateExpression(expression))
         case let .expression(expression): _ = try evaluateExpression(expression)
         case let .var(variable, expression): environment.define(expression, for: variable)
         case let .while(statement): try executeWhile(statement)
-        case let .block(block): try executeBlock(block)
+        case let .block(block): try executeBlock(block, using: Environment(enclosing: environment))
         }
     }
 }
@@ -39,15 +39,34 @@ extension Interpreter {
 
 extension Interpreter {
 
-    fileprivate func executeBlock(_ block: Statement.Block) throws {
+    fileprivate func executeBlock(_ block: Statement.Block, using new: Environment) throws {
 
         let previous = environment
-        environment = Environment(enclosing: previous)
+        environment = new
         defer { environment = previous }
 
         for statement in block.statements {
             try execute(statement)
         }
+    }
+
+    fileprivate func evaluateFunction(_ statement: Statement.Function) throws {
+
+        let function = Callable(description: "Lox Function", arity: statement.parameters.count) {
+            (interpreter, arguments) -> Value in
+
+            let environment = Environment(enclosing: interpreter.globals)
+
+            for (parameter, argument) in zip(statement.parameters, arguments) {
+               environment.define(.value(argument), for: parameter)
+            }
+
+            try interpreter.executeBlock(statement.body, using: environment)
+
+            return .nil
+        }
+
+        environment.define(.value(.callable(function)), for: statement.name)
     }
 
     fileprivate func executeIf(_ statement: Statement.If) throws {

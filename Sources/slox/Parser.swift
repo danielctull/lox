@@ -43,18 +43,18 @@ public final class Parser {
         if match(.if) { return try ifStatement() }
         if match(.print) { return try printStatement() }
         if match(.while) { return try whileStatement() }
-        if match(.leftBrace) { return try blockStatement() }
+        if match(.leftBrace) { return try .block(blockStatement()) }
 
         return try expressionStatement()
     }
 
-    private func blockStatement() throws -> Statement {
+    private func blockStatement() throws -> Statement.Block {
         var statements: [Statement] = []
         while (!check(.rightBrace) && !isAtEnd) {
             statements.append(try declaration())
         }
         try consume(type: .rightBrace)
-        return .block(statements)
+        return Statement.Block(statements: statements)
     }
 
     // This desugars a for loop into a while loop.
