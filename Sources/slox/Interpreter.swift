@@ -58,7 +58,7 @@ extension Interpreter {
     }
 
     fileprivate func evaluateVar(variable: Expression.Variable, expression: Expression?) throws {
-        let value = try expression.map(evaluateExpression).map { Expression.value($0) }
+        let value = try expression.map(evaluateExpression)
         environment.define(value, for: variable)
     }
 
@@ -72,7 +72,7 @@ extension Interpreter {
             let environment = Environment(name: statement.name.name, enclosing: closure)
 
             for (parameter, argument) in zip(statement.parameters, arguments) {
-               environment.define(.value(argument), for: parameter)
+               environment.define(argument, for: parameter)
             }
 
             do {
@@ -84,7 +84,7 @@ extension Interpreter {
             return .nil
         }
 
-        environment.define(.value(.callable(function)), for: statement.name)
+        environment.define(.callable(function), for: statement.name)
     }
 
     fileprivate func evaluateReturn(_ expression: Expression) throws {
@@ -123,7 +123,7 @@ extension Interpreter {
 
     fileprivate func evaluateAssignment(_ assignment: Expression.Assignment) throws -> Value {
         let value = try evaluateExpression(assignment.expression)
-        try environment.assign(.value(value), for: assignment.variable)
+        try environment.assign(value, for: assignment.variable)
         return value
     }
 
@@ -204,8 +204,7 @@ extension Interpreter {
     }
 
     fileprivate func evaluateVariable(_ variable: Expression.Variable) throws -> Value {
-        guard let expression = try environment.get(variable) else { return .nil }
-        return try evaluateExpression(expression)
+        try environment.get(variable) ?? .nil
     }
 }
 

@@ -68,7 +68,7 @@ public indirect enum Expression {
     }
 
     public struct Call {
-        let callee: Expression.Variable
+        let callee: Variable
         let arguments: [Expression]
         let line: Int
     }
@@ -97,7 +97,7 @@ extension Expression {
         .binary(Binary(lhs: lhs, operator: `operator`, rhs: rhs))
     }
 
-    static func call(callee: Expression.Variable, arguments: [Expression], line: Int) -> Expression {
+    static func call(callee: Variable, arguments: [Expression], line: Int) -> Expression {
         .call(Call(callee: callee, arguments: arguments, line: line))
     }
 
@@ -111,19 +111,6 @@ extension Expression {
     static func unary(`operator`: Unary.Operator,
                       expression: Expression) -> Expression {
         .unary(Unary(operator: `operator`, expression: expression))
-    }
-
-    static func function(_ function: @escaping () throws -> Value) -> Expression {
-        .function(arity: 0, { _, _ in try function() })
-    }
-
-    static func function(
-        arity: Int,
-        _ function: @escaping (Interpreter, [Value]) throws -> Value
-    ) -> Expression {
-        .value(.callable(Callable(description: "<native function>",
-                                  arity: arity,
-                                  call: function)))
     }
 
     static func grouping(expression: Expression) -> Expression {

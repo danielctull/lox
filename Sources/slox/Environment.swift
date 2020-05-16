@@ -10,16 +10,16 @@ final class Environment {
         self.name = name
     }
 
-    private var expressions: [Expression.Variable: Expression?] = [:]
+    private var values: [Expression.Variable: Value?] = [:]
 
-    func define(_ expression: Expression?, for variable: Expression.Variable) {
-        expressions[variable] = expression
+    func define(_ value: Value?, for variable: Expression.Variable) {
+        values[variable] = value
     }
 
-    func get(_ variable: Expression.Variable) throws -> Expression? {
+    func get(_ variable: Expression.Variable) throws -> Value? {
 
-        if let expression = expressions[variable] {
-            return expression
+        if let value = values[variable] {
+            return value
         }
 
         if let enclosing = enclosing {
@@ -29,15 +29,15 @@ final class Environment {
         throw UndefinedVariable(variable: variable)
     }
 
-    func assign(_ expression: Expression, for variable: Expression.Variable) throws {
+    func assign(_ value: Value, for variable: Expression.Variable) throws {
 
-        if expressions.keys.contains(variable) {
-            expressions[variable] = expression
+        if values.keys.contains(variable) {
+            values[variable] = value
             return
         }
 
         if let enclosing = enclosing {
-            try enclosing.assign(expression, for: variable)
+            try enclosing.assign(value, for: variable)
             return
         }
 
@@ -56,7 +56,7 @@ extension Environment: CustomStringConvertible {
 
         let name = withUnsafePointer(to: self) { self.name + " (\($0))" }
 
-        let values = expressions
+        let values = self.values
             .map { "\($0.key.name): \($0.value?.description ?? "nil")" }
 
         let underline = String(repeating: "-", count: name.count)
