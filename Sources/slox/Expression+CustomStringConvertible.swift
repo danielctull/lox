@@ -93,6 +93,8 @@ extension Expression.Call: CustomStringConvertible {
     }
 }
 
+extension Callable: CustomStringConvertible {}
+
 extension Expression.Grouping: CustomStringConvertible {
     public var description: String { "(group \(expression))" }
 }

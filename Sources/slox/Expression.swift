@@ -68,7 +68,7 @@ public indirect enum Expression {
     }
 
     public struct Call {
-        let callee: Expression
+        let callee: Expression.Variable
         let arguments: [Expression]
         let line: Int
     }
@@ -97,7 +97,7 @@ extension Expression {
         .binary(Binary(lhs: lhs, operator: `operator`, rhs: rhs))
     }
 
-    static func call(callee: Expression, arguments: [Expression], line: Int) -> Expression {
+    static func call(callee: Expression.Variable, arguments: [Expression], line: Int) -> Expression {
         .call(Call(callee: callee, arguments: arguments, line: line))
     }
 
@@ -113,11 +113,31 @@ extension Expression {
         .unary(Unary(operator: `operator`, expression: expression))
     }
 
+    static func function(_ function: @escaping () throws -> Value) -> Expression {
+        .function(arity: 0, { _, _ in try function() })
+    }
+
+    static func function(
+        arity: Int,
+        _ function: @escaping (Interpreter, [Value]) throws -> Value
+    ) -> Expression {
+        .value(.callable(Callable(description: "<native function>",
+                                  arity: arity,
+                                  call: function)))
+    }
+
     static func grouping(expression: Expression) -> Expression {
         .grouping(Grouping(expression: expression))
     }
 
     static func variable(name: String) -> Expression {
         .variable(Variable(name: name))
+    }
+}
+
+extension Expression.Variable: ExpressibleByStringLiteral {
+
+    public init(stringLiteral value: String) {
+        self.init(name: value)
     }
 }

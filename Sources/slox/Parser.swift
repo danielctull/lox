@@ -331,6 +331,11 @@ public final class Parser {
 
     private func finishCall(callee: Expression) throws -> Expression {
 
+        guard case .variable(let variable) = callee else {
+            struct Failure: Error {}
+            throw Failure()
+        }
+
         var arguments: [Expression] = []
 
         if (!check(.rightParenthesis)) {
@@ -345,7 +350,7 @@ public final class Parser {
 
         let parenthesis = try consume(type: .rightParenthesis)
 
-        return .call(callee: callee,
+        return .call(callee: variable,
                      arguments: arguments,
                      line: parenthesis.line)
     }

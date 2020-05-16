@@ -3,9 +3,13 @@ import Foundation
 
 public final class Interpreter {
 
-    public init() {}
+    public init() {
+        environment = globals
+        globals.define(.function { .number(Date().timeIntervalSince1970) }, for: "clock")
+    }
 
-    var environment = Environment()
+    let globals = Environment()
+    var environment: Environment
 
     public func interpret(_ statements: [Statement]) throws {
         for statement in statements {
@@ -138,18 +142,18 @@ extension Interpreter {
     }
 
     fileprivate func evaluateCall(_ call: Expression.Call) throws -> Value {
-        let callee = try evaluateExpression(call.callee)
+        guard let expression = try environment.get(call.callee) else { return .nil }
         let arguments = try call.arguments.map(evaluateExpression)
 
-        guard let callable = callee as? LoxCallable else {
-            throw NotCallable(value: callee)
+        guard case let .value(.callable(function)) = expression else {
+            throw NotCallable(value: call.callee)
         }
 
-        guard arguments.count == callable.arity else {
-            throw IncorrectArgumentCount(expected: callable.arity, actual: arguments.count)
+        guard arguments.count == function.arity else {
+            throw IncorrectArgumentCount(expected: function.arity, actual: arguments.count)
         }
 
-        return try callable.call(interpreter: self, arguments: arguments)
+        return try function.call(self, arguments)
     }
 
     fileprivate func evaluateGrouping(_ grouping: Expression.Grouping) throws -> Value {
@@ -190,6 +194,7 @@ extension Value: CustomStringConvertible {
         case let .boolean(value): return value.description
         case let .number(value): return value.description
         case let .string(value): return value
+        case let .callable(value): return value.description
         case .nil: return "nil"
         }
     }
@@ -202,6 +207,7 @@ extension Value {
         case .boolean: return "Boolean"
         case .number: return "Number"
         case .string: return "String"
+        case .callable: return "Callable"
         case .nil: return "Nil"
         }
     }
@@ -230,7 +236,7 @@ struct TypeMismatch: LocalizedError {
 }
 
 struct NotCallable: LocalizedError {
-    let value: Value
+    let value: Expression.Variable
     var errorDescription: String? {
         "\(value) is not callable."
     }
