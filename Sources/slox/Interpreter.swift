@@ -59,7 +59,7 @@ extension Interpreter {
 
     fileprivate func evaluateFunction(_ statement: Statement.Function) throws {
 
-        let function = Callable(description: "Lox Function", arity: statement.parameters.count) {
+        let function = Callable(description: statement.description, arity: statement.parameters.count) {
             (interpreter, arguments) -> Value in
 
             let environment = Environment(enclosing: interpreter.globals)

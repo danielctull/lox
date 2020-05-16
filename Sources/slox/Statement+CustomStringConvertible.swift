@@ -23,7 +23,7 @@ extension Statement.Block: CustomStringConvertible {
 }
 
 extension Statement.Function: CustomStringConvertible {
-    public var description: String { "(function \(name))" }
+    public var description: String { "(function \(name.name) \(parameters) \(body))" }
 }
 
 extension Statement.If: CustomStringConvertible {
