@@ -6,7 +6,7 @@ public indirect enum Statement {
     case `if`(If)
     case print(Expression)
     case `return`(Expression)
-    case `var`(Expression.Variable, Expression?)
+    case `var`(Var)
     case `while`(While)
 }
 
@@ -26,6 +26,11 @@ extension Statement {
 
     public struct Block {
         let statements: [Statement]
+    }
+
+    public struct Var {
+        let variable: Expression.Variable
+        let expression: Expression?
     }
 
     public struct While {
@@ -50,6 +55,10 @@ extension Statement {
 
     static func `if`(condition: Expression, then: Statement, else: Statement?) -> Statement {
         .if(If(condition: condition, then: then, else: `else`))
+    }
+
+    static func `var`(variable: Expression.Variable, expression: Expression? = nil) -> Statement {
+        .var(Var(variable: variable, expression: expression))
     }
 
     static func `while`(condition: Expression, body: Statement) -> Statement {

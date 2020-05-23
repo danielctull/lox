@@ -29,7 +29,7 @@ extension Interpreter {
         case let .print(expression): Swift.print(try evaluateExpression(expression))
         case let .return(expression): try evaluateReturn(expression)
         case let .expression(expression): _ = try evaluateExpression(expression)
-        case let .var(variable, expression): try evaluateVar(variable: variable, expression: expression)
+        case let .var(statement): try evaluateVar(statement)
         case let .while(statement): try executeWhile(statement)
         case let .block(block): try executeBlock(block, using: Environment(name: "Block", enclosing: environment))
         }
@@ -57,9 +57,9 @@ extension Interpreter {
         let value: Value
     }
 
-    private func evaluateVar(variable: Expression.Variable, expression: Expression?) throws {
-        let value = try expression.map(evaluateExpression)
-        environment.define(value, for: variable)
+    private func evaluateVar(_ statement: Statement.Var) throws {
+        let value = try statement.expression.map(evaluateExpression)
+        environment.define(value, for: statement.variable)
     }
 
     private func evaluateFunction(_ statement: Statement.Function) throws {

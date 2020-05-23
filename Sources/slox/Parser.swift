@@ -161,7 +161,7 @@ public final class Parser {
         let variable = Expression.Variable(name: token.lexeme)
         let initializer = match(.equal) ? try expression() : nil
         try consume(type: .semicolon)
-        return .var(variable, initializer)
+        return .var(variable: variable, expression: initializer)
     }
 
     private func expressionStatement() throws -> Statement {

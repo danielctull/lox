@@ -9,7 +9,7 @@ extension Statement: CustomStringConvertible {
         case let .if(statement): return statement.description
         case let .print(expression): return "(print \(expression))"
         case let .return(expression): return "(return \(expression))"
-        case let .var(variable, expression): return "(define \(variable) \(expression?.description ?? ""))"
+        case let .var(statement): return statement.description
         case let .while(statement): return statement.description
         }
     }
@@ -32,6 +32,10 @@ extension Statement.If: CustomStringConvertible {
         let elsePart = self.else.map(\.description).map { " else " + $0 }
         return "(if \(condition) then \(then)\(elsePart ?? "")"
     }
+}
+
+extension Statement.Var: CustomStringConvertible {
+    public var description: String { "(define \(variable) \(expression?.description ?? ""))" }
 }
 
 extension Statement.While: CustomStringConvertible {
