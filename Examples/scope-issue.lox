@@ -1,0 +1,12 @@
+// Example from Chapter 11.1 explaining the issue with scoping and binding variables.
+
+var a = "global";
+{
+    fun showA() {
+        print a;
+    }
+    
+    showA();
+    var a = "block";
+    showA();
+}
